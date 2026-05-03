@@ -2739,24 +2739,71 @@
     /* ═══════════════════════════════════════════════════════
        HERO MUSIC PLAYER
     ═══════════════════════════════════════════════════════ */
+    // (function () {
+    //   const audio = new Audio();
+    //   audio.loop = true;
+    //   let activeBtn = null;
+
+    //   document.querySelectorAll('.music-btn').forEach(btn => {
+    //     btn.addEventListener('click', () => {
+    //       if (activeBtn === btn) {
+    //         audio.pause();
+    //         btn.classList.remove('playing');
+    //         activeBtn = null;
+    //       } else {
+    //         if (activeBtn) activeBtn.classList.remove('playing');
+    //         audio.src = btn.dataset.src;
+    //         audio.currentTime = 0;
+    //         audio.play().catch(() => { });
+    //         btn.classList.add('playing');
+    //         activeBtn = btn;
+    //       }
+    //     });
+    //   });
+    // })();
+
     (function () {
       const audio = new Audio();
       audio.loop = true;
       let activeBtn = null;
+      let isUnlocked = false; // Track if we've cleared the iOS "gate"
 
       document.querySelectorAll('.music-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+          // 1. The iOS "Silent Unlock"
+          if (!isUnlocked) {
+            audio.play().then(() => {
+              audio.pause();
+              isUnlocked = true;
+            }).catch(() => { /* Silent failure is fine here */ });
+          }
+
           if (activeBtn === btn) {
             audio.pause();
             btn.classList.remove('playing');
             activeBtn = null;
           } else {
             if (activeBtn) activeBtn.classList.remove('playing');
+
+            // 2. Standardize source change
             audio.src = btn.dataset.src;
             audio.currentTime = 0;
-            audio.play().catch(() => { });
-            btn.classList.add('playing');
-            activeBtn = btn;
+
+            // 3. The Safari "Load" Handshake
+            audio.load();
+
+            // 4. Play with a promise catch
+            const playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+              playPromise.then(() => {
+                btn.classList.add('playing');
+                activeBtn = btn;
+              }).catch((err) => {
+                console.error("Benny's tunes were blocked:", err);
+                // This usually happens if the phone is on "Low Power Mode"
+              });
+            }
           }
         });
       });
