@@ -70,7 +70,16 @@
        HERO
     ═══════════════════════════════════════ */
     #hero {
-      min-height: 100svh;
+      /* 1. The classic fallback (Works everywhere) */
+      height: 100vh;
+
+      /* 2. The "Safe" fallback (Optional - works on most modern mobile) */
+      /* Use this if you want a static height that never overlaps the URL bar */
+      height: 100svh;
+
+      /* 3. The Gold Standard (Modern browsers) */
+      /* This will override the ones above if the browser supports it */
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -2054,22 +2063,26 @@
 
     /* OLD SCROLL CTA */
     // document.getElementById('scroll-cta').addEventListener('click', () => {
-    //   const target = document.getElementById('photo-1');
-    //   const y = target.getBoundingClientRect().top + window.scrollY - 20;
-    //   window.scrollTo({ top: y, behavior: 'smooth' });
+    //   const hero = document.getElementById('hero');
+    //         const heroHeight = hero.offsetHeight;
+    //   window.scrollTo({
+    //     top: heroHeight + 55,
+    //     behavior: 'smooth'
+    //   });
     // });
 
-    /* SCROLL CTA */
     document.getElementById('scroll-cta').addEventListener('click', () => {
-      const hero = document.getElementById('hero');
+      const targetSection = document.getElementById('photo-1');
 
-      // 1. Measure the real rendered height of the hero
-      const heroHeight = hero.offsetHeight;
+      // 1. Get the current distance from the top of the page to the section
+      const elementPosition = targetSection.getBoundingClientRect().top + window.scrollY;
 
-      // 2. Scroll to the bottom of the hero + 55px 
-      // This "overshoots" the hero, burying the arrow and showing the photo
+      // 2. Subtract some px to create that "under the UI" buffer
+      const offsetPosition = elementPosition - 10;
+
+      // 3. Perform the smooth scroll
       window.scrollTo({
-        top: heroHeight + 55,
+        top: offsetPosition,
         behavior: 'smooth'
       });
     });
