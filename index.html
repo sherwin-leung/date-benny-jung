@@ -1374,6 +1374,7 @@
       display: flex;
       align-items: center;
       gap: .35rem;
+      margin-top: 2rem;
     }
 
     .hero-music-hint::before {
@@ -1386,6 +1387,7 @@
       display: flex;
       gap: 1.1rem;
       align-items: center;
+      margin-top: 0.5rem;
     }
 
     .music-btn {
@@ -2763,18 +2765,18 @@
     /* ═══════════════════════════════════════════════════════
        STATS BAR — hide swipe hint on first touch/scroll
     ═══════════════════════════════════════════════════════ */
-    (function () {
-      const strip = document.getElementById('stats-scroll');
-      const hint = document.getElementById('stats-drag-hint');
-      if (!strip || !hint) return;
-      function hideHint() {
-        hint.classList.add('hidden');
-        strip.removeEventListener('scroll', hideHint);
-        strip.removeEventListener('touchstart', hideHint);
-      }
-      strip.addEventListener('scroll', hideHint, { passive: true });
-      strip.addEventListener('touchstart', hideHint, { passive: true });
-    })();
+    // (function () {
+    //   const strip = document.getElementById('stats-scroll');
+    //   const hint = document.getElementById('stats-drag-hint');
+    //   if (!strip || !hint) return;
+    //   function hideHint() {
+    //     hint.classList.add('hidden');
+    //     strip.removeEventListener('scroll', hideHint);
+    //     strip.removeEventListener('touchstart', hideHint);
+    //   }
+    //   strip.addEventListener('scroll', hideHint, { passive: true });
+    //   strip.addEventListener('touchstart', hideHint, { passive: true });
+    // })();
 
     /* ═══════════════════════════════════════════════════════
        DATING RESUME — SKILL LEVELS
