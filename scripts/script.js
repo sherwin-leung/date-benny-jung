@@ -1209,14 +1209,15 @@ SKILLS.forEach((skill, si) => {
      let heartInterval = null;
 
      function launchHearts() {
-          console.log("Attempting to launch hearts..."); // Debug log
+          // Don't launch if cupids haven't flown in yet
+          const anyCupidVisible = Array.from(cupids).some((c) => parseFloat(c.style.opacity || 0) >= 0.5);
+          if (!anyCupidVisible) return;
 
           cupids.forEach((cupid, index) => {
                const rect = cupid.getBoundingClientRect();
 
-               // Only skip if the cupid literally doesn't exist/has no size
-               if (rect.width === 0) {
-                    console.warn(`Cupid ${index} has no width. Skipping.`);
+               // Skip if the cupid has no size or is still off-screen
+               if (rect.width === 0 || rect.right < 0 || rect.left > window.innerWidth) {
                     return;
                }
 
@@ -1271,19 +1272,39 @@ SKILLS.forEach((skill, si) => {
      }
 
      if (aboutSection && cupids.length > 0) {
+          let pollId = null;
+
+          function cupidsReady() {
+               return Array.from(cupids).some((c) => parseFloat(c.style.opacity || 0) >= 0.5);
+          }
+
+          function startHearts() {
+               if (heartInterval || pollId) return;
+               // Poll every 100ms until cupids are on-screen, then fire immediately
+               pollId = setInterval(() => {
+                    if (cupidsReady()) {
+                         clearInterval(pollId);
+                         pollId = null;
+                         launchHearts();
+                         heartInterval = setInterval(launchHearts, 5000);
+                    }
+               }, 100);
+          }
+
+          function stopHearts() {
+               clearInterval(pollId);
+               pollId = null;
+               clearInterval(heartInterval);
+               heartInterval = null;
+          }
+
           const observer = new IntersectionObserver(
                (entries) => {
                     entries.forEach((entry) => {
                          if (entry.isIntersecting) {
-                              console.log("About section in view. Starting hearts.");
-                              if (!heartInterval) {
-                                   launchHearts();
-                                   heartInterval = setInterval(launchHearts, 5000);
-                              }
+                              startHearts();
                          } else {
-                              console.log("About section out of view. Stopping hearts.");
-                              clearInterval(heartInterval);
-                              heartInterval = null;
+                              stopHearts();
                          }
                     });
                },
@@ -1292,6 +1313,192 @@ SKILLS.forEach((skill, si) => {
 
           observer.observe(aboutSection);
      } else {
-          console.error("Could not find #about section or .cupid elements in HTML.");
+          // #about or .cupid elements not found — hearts disabled
+     }
+})();
+
+/* ═══════════════════════════════════════════════════════
+   MOODBOARD
+═══════════════════════════════════════════════════════ */
+(function () {
+     /* ── Clothespin SVG ── */
+     function makePinSVG() {
+          return (
+               '<svg viewBox="0 0 30 36" width="30" height="36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+               /* outer spring ring */
+               '<ellipse cx="15" cy="9" rx="7" ry="5.8" fill="none" stroke="#8a8a8a" stroke-width="2.4"/>' +
+               /* inner hub */
+               '<ellipse cx="15" cy="9" rx="4" ry="3.2" fill="#686868"/>' +
+               /* wire hole */
+               '<ellipse cx="15" cy="3.5" rx="3.2" ry="3" fill="#505050"/>' +
+               /* left arm */
+               '<path d="M8,12 Q7,17 5.5,29 Q5,33.5 8,34.5 Q11,34.5 12.5,29 L14,12Z"' +
+               ' fill="#C9A040" stroke="#9a7820" stroke-width="0.6" stroke-linejoin="round"/>' +
+               /* right arm */
+               '<path d="M22,12 Q23,17 24.5,29 Q25,33.5 22,34.5 Q19,34.5 17.5,29 L16,12Z"' +
+               ' fill="#B08828" stroke="#886010" stroke-width="0.6" stroke-linejoin="round"/>' +
+               /* grain lines left */
+               '<line x1="9" y1="16" x2="13.5" y2="16" stroke="rgba(100,60,0,.18)" stroke-width="0.8"/>' +
+               '<line x1="8.5" y1="21" x2="13" y2="21" stroke="rgba(100,60,0,.18)" stroke-width="0.8"/>' +
+               '<line x1="8" y1="26" x2="13" y2="26" stroke="rgba(100,60,0,.18)" stroke-width="0.8"/>' +
+               /* grain lines right */
+               '<line x1="16.5" y1="16" x2="21" y2="16" stroke="rgba(80,40,0,.16)" stroke-width="0.8"/>' +
+               '<line x1="16.5" y1="21" x2="21.5" y2="21" stroke="rgba(80,40,0,.16)" stroke-width="0.8"/>' +
+               '<line x1="16.5" y1="26" x2="22" y2="26" stroke="rgba(80,40,0,.16)" stroke-width="0.8"/>' +
+               /* center gap */
+               '<line x1="15" y1="12" x2="15" y2="34.5" stroke="rgba(0,0,0,.20)" stroke-width="1.6"/>' +
+               "</svg>"
+          );
+     }
+
+     /* ── Inject clothespins ── */
+     function injectPins() {
+          document.querySelectorAll("#moodboard .mb-pin").forEach(function (el) {
+               el.innerHTML = makePinSVG();
+          });
+     }
+
+     /* ── Build wire SVG that threads through each pin's center ──
+     We collect the real DOM y-position of every pin after layout,
+     then draw the bezier path through those exact points.
+  ── */
+     function buildWire() {
+          var wrap = document.getElementById("mb-wire-wrap");
+          var body = document.getElementById("mb-body");
+          if (!wrap || !body) return;
+
+          var W = body.offsetWidth;
+          var H = body.offsetHeight;
+          var cx = W / 2;
+
+          /* Gather each pin's center coords relative to mb-body */
+          var pins = Array.prototype.slice.call(body.querySelectorAll(".mb-pin"));
+
+          var pts = pins.map(function (pin) {
+               var node = pin.parentElement;
+               return {
+                    x: cx /* all centered on wire */,
+                    y: node.offsetTop + pin.offsetHeight / 2 /* vertical center of pin */,
+               };
+          });
+
+          /* S-curve aesthetic: control-point horizontal deviation alternates sides */
+          var dev = Math.min(W * 0.06, 26);
+          var NS = "http://www.w3.org/2000/svg";
+
+          /* ── Wire path: M from above first pin, C through each pin ── */
+          var d = ["M", cx, 0];
+          var dir = 1;
+
+          for (var i = 0; i < pts.length; i++) {
+               var prevY = i === 0 ? 0 : pts[i - 1].y;
+               var curr = pts[i];
+               var span = curr.y - prevY;
+
+               d.push(
+                    "C",
+                    cx + dev * dir,
+                    prevY + span * 0.3 /* CP1 deviates */,
+                    cx + dev * dir,
+                    curr.y - span * 0.3 /* CP2 deviates same side */,
+                    curr.x,
+                    curr.y /* anchor = exact pin center */,
+               );
+               dir *= -1; /* alternate for S-curve */
+          }
+
+          /* Continue to bottom of section */
+          var lastY = pts[pts.length - 1].y;
+          var span2 = H - lastY;
+          d.push("C", cx + dev * dir, lastY + span2 * 0.3, cx, H - 4, cx, H);
+
+          var wirePath = d.join(" ");
+
+          /* ── Top hook ── */
+          var hookTop = ["M", cx, 0, "C", cx, -12, cx + 13, -18, cx + 18, -10, "C", cx + 23, -2, cx + 15, 10, cx + 6, 12].join(" ");
+
+          /* ── Bottom hook (mirrors top, flipped) ── */
+          var hookBot = ["M", cx, H, "C", cx, H + 12, cx - 13, H + 18, cx - 18, H + 10, "C", cx - 23, H + 2, cx - 15, H - 10, cx - 6, H - 12].join(
+               " ",
+          );
+
+          /* ── Build SVG ── */
+          var svg = document.createElementNS(NS, "svg");
+          svg.setAttribute("viewBox", "0 -22 " + W + " " + (H + 44));
+          svg.style.cssText = "position:absolute;top:-22px;left:0;width:100%;height:" + (H + 44) + "px;" + "overflow:visible;pointer-events:none;";
+
+          function mkPath(d, stroke, sw) {
+               var p = document.createElementNS(NS, "path");
+               p.setAttribute("d", d);
+               p.setAttribute("fill", "none");
+               p.setAttribute("stroke", stroke);
+               p.setAttribute("stroke-width", sw);
+               p.setAttribute("stroke-linecap", "round");
+               return p;
+          }
+
+          svg.appendChild(mkPath(wirePath, "rgba(195,180,148,.48)", "1.6"));
+          svg.appendChild(mkPath(hookTop, "rgba(190,165,110,.72)", "2.2"));
+          svg.appendChild(mkPath(hookBot, "rgba(190,165,110,.72)", "2.2"));
+
+          wrap.innerHTML = "";
+          wrap.appendChild(svg);
+          wrap.style.height = H + 44 + "px";
+     }
+
+     /* ── Intersection Observer: swing each polaroid in ── */
+     function initObserver() {
+          var nodes = Array.prototype.slice.call(document.querySelectorAll("#moodboard .mb-node"));
+          if (!nodes.length) return;
+
+          var obs = new IntersectionObserver(
+               function (entries) {
+                    entries.forEach(function (entry) {
+                         if (!entry.isIntersecting) return;
+                         var node = entry.target;
+                         var idx = nodes.indexOf(node);
+                         var delay = idx * 0.04;
+
+                         var hang = node.querySelector(".mb-hang");
+                         var annot = node.querySelector(".mb-annot");
+                         if (hang) hang.style.transitionDelay = delay + "s, " + delay + "s";
+                         if (annot) annot.style.transitionDelay = delay + 0.5 + "s";
+
+                         node.classList.add("mb-in");
+                         obs.unobserve(node);
+                    });
+               },
+               { threshold: 0.15 },
+          );
+
+          nodes.forEach(function (n) {
+               obs.observe(n);
+          });
+     }
+
+     /* ── Init ── */
+     function init() {
+          injectPins();
+
+          /* Wire needs layout to be complete — use rAF + small delay */
+          requestAnimationFrame(function () {
+               setTimeout(function () {
+                    buildWire();
+                    initObserver();
+               }, 60);
+          });
+
+          /* Rebuild on resize */
+          var resizeTimer;
+          window.addEventListener("resize", function () {
+               clearTimeout(resizeTimer);
+               resizeTimer = setTimeout(buildWire, 120);
+          });
+     }
+
+     if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+     } else {
+          init();
      }
 })();
