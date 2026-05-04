@@ -1050,15 +1050,15 @@ SKILLS.forEach((skill, si) => {
                   heading crosses vh/2 back up → leave zone → flyOut
 ═══════════════════════════════════════════════════════ */
 (function () {
-     const about    = document.getElementById("about");
+     const about = document.getElementById("about");
      const prosCons = document.getElementById("pros-cons");
      if (!about || !prosCons) return;
 
      /* ── PNG factory ─────────────────────────────── */
      function makeCupidImg() {
           const img = document.createElement("img");
-          img.src      = "images/cupids.png";
-          img.alt      = "";
+          img.src = "images/cupid.png";
+          img.alt = "";
           img.draggable = false;
           return img;
      }
@@ -1070,10 +1070,9 @@ SKILLS.forEach((skill, si) => {
         phase   : phase offset so they don't move in sync
      ─────────────────────────────────────────────── */
      const CUPID_CFG = [
-          { side: "left",  yAnchor: 0.3,  driftR: 22, speed: 0.55, phase: 0              },
-          { side: "right", yAnchor: 0.58, driftR: 18, speed: 0.48, phase: Math.PI        },
-          { side: "left",  yAnchor: 0.72, driftR: 14, speed: 0.62, phase: Math.PI * 0.7,
-            desktopOnly: true },
+          { side: "left", yAnchor: 0.3, driftR: 22, speed: 0.55, phase: 0 },
+          { side: "right", yAnchor: 0.58, driftR: 18, speed: 0.48, phase: Math.PI },
+          { side: "left", yAnchor: 0.72, driftR: 14, speed: 0.62, phase: Math.PI * 0.7, desktopOnly: true },
      ];
 
      /* ── Build DOM elements ──────────────────────── */
@@ -1089,72 +1088,83 @@ SKILLS.forEach((skill, si) => {
 
      /* ── Animation state ─────────────────────────── */
      const FLY_MS = 650;
-     let flyDir      = 0;    // +1 in, -1 out
-     let flyProgress = 0;    // 0..1
-     let flyStartT   = null;
+     let flyDir = 0; // +1 in, -1 out
+     let flyProgress = 0; // 0..1
+     let flyStartT = null;
      let orbitStartT = null;
-     let animId      = null;
+     let animId = null;
 
      const easeSine = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
 
      /* ── Render tick ─────────────────────────────── */
      function tick(ts) {
           if (!orbitStartT) orbitStartT = ts;
-          if (!flyStartT)   flyStartT   = ts;
+          if (!flyStartT) flyStartT = ts;
 
           const tNorm = Math.min((ts - flyStartT) / FLY_MS, 1);
           flyProgress = flyDir === 1 ? easeSine(tNorm) : 1 - easeSine(tNorm);
 
-          const vw      = window.innerWidth;
-          const vh      = window.innerHeight;
-          const orbitT  = (ts - orbitStartT) / 1000;
-          const isDesk  = vw >= 768;
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          const orbitT = (ts - orbitStartT) / 1000;
+          const isDesk = vw >= 768;
 
           cupidEls.forEach(({ el, cfg }) => {
-               if (cfg.desktopOnly && !isDesk) { el.style.opacity = "0"; return; }
+               if (cfg.desktopOnly && !isDesk) {
+                    el.style.opacity = "0";
+                    return;
+               }
 
                /* Size matches CSS breakpoints */
                const sz = vw >= 1024 ? 112 : vw >= 640 ? 96 : 78;
 
                /* Rest X: outside 680 px content column on desktop, edge on mobile */
                const CONTENT_W = 680;
-               const pad       = 6;
+               const pad = 6;
                let restX;
                if (isDesk && vw > CONTENT_W) {
                     const colEdge = (vw - CONTENT_W) / 2;
-                    restX = cfg.side === "left"
-                         ? Math.max(pad, colEdge - sz - 8)
-                         : Math.min(vw - sz - pad, vw - colEdge + 8);
+                    restX = cfg.side === "left" ? Math.max(pad, colEdge - sz - 8) : Math.min(vw - sz - pad, vw - colEdge + 8);
                } else {
                     restX = cfg.side === "left" ? pad : vw - sz - pad;
                }
 
-               const offX    = cfg.side === "left" ? -(sz + 20) : vw + 20;
+               const offX = cfg.side === "left" ? -(sz + 20) : vw + 20;
                const wobbleX = Math.sin(orbitT * cfg.speed + cfg.phase) * cfg.driftR * flyProgress;
                const wobbleY = Math.cos(orbitT * cfg.speed * 0.7 + cfg.phase) * cfg.driftR * 0.5 * flyProgress;
-               const slideX  = offX + (restX - offX) * flyProgress;
-               const x       = slideX + (cfg.side === "left" ? wobbleX : -wobbleX);
-               const y       = cfg.yAnchor * vh - sz / 2 + wobbleY;
-               const tilt    = cfg.side === "left" ? -18 * (1 - flyProgress) : 18 * (1 - flyProgress);
+               const slideX = offX + (restX - offX) * flyProgress;
+               const x = slideX + (cfg.side === "left" ? wobbleX : -wobbleX);
+               const y = cfg.yAnchor * vh - sz / 2 + wobbleY;
+               const tilt = cfg.side === "left" ? -18 * (1 - flyProgress) : 18 * (1 - flyProgress);
 
                el.style.transform = `translate(${x}px,${y}px) rotate(${tilt}deg)`;
-               el.style.opacity   = String(flyProgress);
+               el.style.opacity = String(flyProgress);
           });
 
           const done = tNorm >= 1 && flyDir === -1 && flyProgress <= 0.001;
-          if (!done) { animId = requestAnimationFrame(tick); }
-          else       { cancelAnimationFrame(animId); animId = null; }
+          if (!done) {
+               animId = requestAnimationFrame(tick);
+          } else {
+               cancelAnimationFrame(animId);
+               animId = null;
+          }
      }
 
-     const startLoop = () => { if (!animId) animId = requestAnimationFrame(tick); };
+     const startLoop = () => {
+          if (!animId) animId = requestAnimationFrame(tick);
+     };
 
-     function flyIn()  {
-          if (flyDir ===  1 && flyProgress > 0.99) return;
-          flyDir = 1; flyStartT = null; startLoop();
+     function flyIn() {
+          if (flyDir === 1 && flyProgress > 0.99) return;
+          flyDir = 1;
+          flyStartT = null;
+          startLoop();
      }
      function flyOut() {
           if (flyDir === -1 && flyProgress < 0.01) return;
-          flyDir = -1; flyStartT = null; startLoop();
+          flyDir = -1;
+          flyStartT = null;
+          startLoop();
      }
 
      /* ── Scroll trigger ──────────────────────────────
@@ -1163,19 +1173,125 @@ SKILLS.forEach((skill, si) => {
         Both boundaries are single crossing-points that reverse
         cleanly on scroll-up — no latch or state ambiguity needed.
      ─────────────────────────────────────────────────── */
-     const heading      = about.querySelector(".about-heading") || about;
-     let   cupidsVisible = false;
+     const heading = about.querySelector(".about-heading") || about;
+     let cupidsVisible = false;
 
      function checkCupidTrigger() {
-          const vh         = window.innerHeight;
+          const vh = window.innerHeight;
           const headingTop = heading.getBoundingClientRect().top;
-          const prosTop    = prosCons.getBoundingClientRect().top;
-          const inZone     = headingTop <= vh / 2 && prosTop > vh / 2;
+          const prosTop = prosCons.getBoundingClientRect().top;
+          const inZone = headingTop <= vh / 2 && prosTop > vh / 2;
 
-          if (inZone && !cupidsVisible)  { cupidsVisible = true;  flyIn();  }
-          if (!inZone && cupidsVisible)  { cupidsVisible = false; flyOut(); }
+          if (inZone && !cupidsVisible) {
+               cupidsVisible = true;
+               flyIn();
+          }
+          if (!inZone && cupidsVisible) {
+               cupidsVisible = false;
+               flyOut();
+          }
      }
 
      window.addEventListener("scroll", checkCupidTrigger, { passive: true });
      checkCupidTrigger();
+})();
+
+/* ═══════════════════════════════════════════════════════
+       REPEATING CUPID PNG HEARTS
+    ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+       REPEATING CUPID HEARTS - BUG FIX VERSION
+    ═══════════════════════════════════════════════════════ */
+(function () {
+     const aboutSection = document.querySelector("#about");
+     const cupids = document.querySelectorAll(".cupid");
+     const HEART_SRC = "images/heart.png";
+     let heartInterval = null;
+
+     function launchHearts() {
+          console.log("Attempting to launch hearts..."); // Debug log
+
+          cupids.forEach((cupid, index) => {
+               const rect = cupid.getBoundingClientRect();
+
+               // Only skip if the cupid literally doesn't exist/has no size
+               if (rect.width === 0) {
+                    console.warn(`Cupid ${index} has no width. Skipping.`);
+                    return;
+               }
+
+               for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                         const heart = document.createElement("div");
+
+                         // Assign Random Color
+                         const colors = ["red", "blue", "pink"];
+                         const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                         heart.className = `heart ${randomColor}`;
+
+                         const img = document.createElement("img");
+                         img.src = HEART_SRC;
+                         heart.appendChild(img);
+
+                         // Calculation for absolute positioning on the page
+                         const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+                         const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+                         // Spawn 60px below cupid center
+                         const startX = rect.left + rect.width / 2 + scrollX;
+                         const startY = rect.top + rect.height / 2 + scrollY + 60;
+
+                         Object.assign(heart.style, {
+                              position: "absolute",
+                              left: `${startX}px`,
+                              top: `${startY}px`,
+                              width: "30px",
+                              height: "30px",
+                              pointerEvents: "none",
+                              zIndex: "9999", // Extreme z-index to ensure visibility
+                         });
+
+                         document.body.appendChild(heart);
+
+                         // Float Upward Animation
+                         heart.animate(
+                              [
+                                   { transform: "translate(-50%, 0) scale(0.5)", opacity: 1 },
+                                   { transform: `translate(${(Math.random() - 0.5) * 100}px, -250px) scale(1.3)`, opacity: 0 },
+                              ],
+                              {
+                                   duration: 2500 + Math.random() * 1000,
+                                   easing: "ease-out",
+                                   fill: "forwards",
+                              },
+                         ).onfinish = () => heart.remove();
+                    }, i * 300);
+               }
+          });
+     }
+
+     if (aboutSection && cupids.length > 0) {
+          const observer = new IntersectionObserver(
+               (entries) => {
+                    entries.forEach((entry) => {
+                         if (entry.isIntersecting) {
+                              console.log("About section in view. Starting hearts.");
+                              if (!heartInterval) {
+                                   launchHearts();
+                                   heartInterval = setInterval(launchHearts, 5000);
+                              }
+                         } else {
+                              console.log("About section out of view. Stopping hearts.");
+                              clearInterval(heartInterval);
+                              heartInterval = null;
+                         }
+                    });
+               },
+               { threshold: 0.1 },
+          );
+
+          observer.observe(aboutSection);
+     } else {
+          console.error("Could not find #about section or .cupid elements in HTML.");
+     }
 })();
