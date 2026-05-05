@@ -1619,6 +1619,7 @@
       background: var(--navy);
       position  : relative;
       overflow  : hidden;
+      isolation : isolate;
     }
 
     .mb-header {
@@ -1630,6 +1631,7 @@
     .mb-body {
       position: relative;
       width   : 100%;
+      z-index : 1;
     }
 
     .mb-wire-wrap {
@@ -2122,7 +2124,27 @@
       width         : 100%;
       height        : 100%;
       pointer-events: none;
+      z-index       : 2;
+    }
+
+    #mb-doodles-canvas {
+      position      : absolute;
+      top           : 0;
+      left          : 0;
+      width         : 100%;
+      height        : 100%;
+      pointer-events: none;
       z-index       : 0;
+    }
+
+    #mb-doodles-front-canvas {
+      position      : absolute;
+      top           : 0;
+      left          : 0;
+      width         : 100%;
+      height        : 100%;
+      pointer-events: none;
+      z-index       : 2;
     }
 
     .mb-scroll-hint {

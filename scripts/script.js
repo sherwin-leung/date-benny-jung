@@ -761,7 +761,7 @@ document.querySelectorAll(".flip-card").forEach((card) => {
           string, including emoji. ──
     ═══════════════════════════════════════════════════════ */
 (function () {
-     const TEXT = "(please) 🥺"; // ← edit freely
+     const TEXT = "please 🥺"; // ← edit freely
      const FONT_SIZE = 2.0; // rem
      const FONT_WEIGHT = "500"; // thinner
 
@@ -1556,7 +1556,7 @@ SKILLS.forEach((skill, si) => {
                angle: baseAngle, // current travel direction (radians)
                baseAngle: baseAngle, // home direction for wave oscillation
                right: right,
-               speed: 1.0 + Math.random() * 0.9,
+               speed: 0.67 + Math.random() * 0.6,
                color: COLORS[Math.floor(Math.random() * COLORS.length)],
                size: planeSize(),
                // Gentle sine-wave oscillation of heading
@@ -1611,7 +1611,7 @@ SKILLS.forEach((skill, si) => {
           //   wx = px + lx·cos(a) − ly·sin(a)   (same x)
           //   wy = py − lx·sin(a) − ly·cos(a)   (y signs flipped)
           var lx = -0.27 * p.size;
-          var ly = 0.285 * p.size * imgAspect;
+          var ly = 0.34 * p.size * imgAspect;
           var ca = Math.cos(p.angle),
                sa = Math.sin(p.angle);
           var tailX = p.x + lx * ca - ly * sa;
@@ -1730,4 +1730,256 @@ SKILLS.forEach((skill, si) => {
      } else {
           init();
      }
+})();
+
+/* ═══════════════════════════════════════════════════════
+   MOODBOARD DOODLES — scattered hearts, stars, arrows
+═══════════════════════════════════════════════════════ */
+(function initDoodles() {
+     var section = document.getElementById("moodboard");
+     var canvas = document.getElementById("mb-doodles-canvas"); // behind polaroids
+     var canvasFront = document.getElementById("mb-doodles-front-canvas"); // above polaroids
+     if (!section || !canvas || !canvasFront) return;
+
+     var ctx = canvas.getContext("2d");
+     var ctxFront = canvasFront.getContext("2d");
+     var W = 0,
+          H = 0;
+     var animId = null;
+     var doodles = [];
+
+     var COLORS = ["#c9a96a", "#d4b87a", "#8ab4dc", "#a0c4e8", "#c38a8c", "#d4a0a2", "#ede8da", "#a8c4a2", "#b8a0d4", "#f0c4a0"];
+     var COUNT = 45;
+
+     function resize() {
+          W = canvas.width = canvasFront.width = section.offsetWidth;
+          H = canvas.height = canvasFront.height = section.offsetHeight;
+     }
+
+     /* ── Helper: generate N random offsets in range [-maxW, +maxW] ── */
+     function rndOffsets(n, maxW) {
+          var out = [];
+          for (var i = 0; i < n; i++) out.push((Math.random() - 0.5) * maxW * 2);
+          return out;
+     }
+
+     /* ── Heart — uses 5 pre-baked offsets ── */
+     function drawHeart(ctx, s, o) {
+          ctx.beginPath();
+          ctx.moveTo(0, s * 0.3);
+          ctx.bezierCurveTo(-s * 0.1 + o[0], -s * 0.4, -s * 1.0 + o[1], -s * 0.4, 0, -s * 0.9 + o[2]);
+          ctx.bezierCurveTo(s * 1.0 + o[3], -s * 0.4, s * 0.1 + o[4], -s * 0.4, 0, s * 0.3);
+          ctx.stroke();
+     }
+
+     /* ── 4-point star — 16 pre-baked offsets (4 points × 4 coords) ── */
+     function drawStar(ctx, s, o) {
+          ctx.beginPath();
+          for (var i = 0; i < 4; i++) {
+               var a1 = (i / 4) * Math.PI * 2 - Math.PI / 2;
+               var a2 = a1 + Math.PI / 4;
+               var ox = Math.cos(a1) * s + o[i * 4];
+               var oy = Math.sin(a1) * s + o[i * 4 + 1];
+               var ix = Math.cos(a2) * s * 0.22 + o[i * 4 + 2];
+               var iy = Math.sin(a2) * s * 0.22 + o[i * 4 + 3];
+               if (i === 0) ctx.moveTo(ox, oy);
+               else ctx.lineTo(ox, oy);
+               ctx.lineTo(ix, iy);
+          }
+          ctx.closePath();
+          ctx.stroke();
+     }
+
+     /* ── Arrow — 8 pre-baked offsets ── */
+     function drawArrow(ctx, s, o) {
+          ctx.beginPath();
+          ctx.moveTo(-s + o[0], o[1]);
+          ctx.lineTo(s + o[2], o[3]);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(s * 0.55 + o[4], -s * 0.45 + o[5]);
+          ctx.lineTo(s + o[6], o[7]);
+          ctx.lineTo(s * 0.55 + o[4], s * 0.45 + o[5]);
+          ctx.stroke();
+     }
+
+     /* ── Sparkle — no wobble, always stable ── */
+     function drawSparkle(ctx, s) {
+          [
+               [0, 0],
+               [s * 1.1, -s * 0.5],
+               [s * 0.4, s * 1.1],
+               [-s * 1.0, s * 0.3],
+               [-s * 0.6, -s * 0.9],
+          ].forEach(function (p, i) {
+               ctx.beginPath();
+               ctx.arc(p[0], p[1], s * (i === 0 ? 0.38 : 0.2), 0, Math.PI * 2);
+               ctx.stroke();
+          });
+     }
+
+     /* ── Smiley — just :) eyes and smile, no head circle ── */
+     function drawSmiley(ctx, s, o) {
+          // Left eye dot
+          ctx.beginPath();
+          ctx.arc(-s * 0.32 + o[0], -s * 0.2 + o[1], s * 0.1, 0, Math.PI * 2);
+          ctx.fill();
+          // Right eye dot
+          ctx.beginPath();
+          ctx.arc(s * 0.32 + o[2], -s * 0.2 + o[3], s * 0.1, 0, Math.PI * 2);
+          ctx.fill();
+          // Smile arc
+          ctx.beginPath();
+          ctx.arc(o[4], s * 0.1 + o[5], s * 0.38, 0.2, Math.PI - 0.2);
+          ctx.stroke();
+     }
+
+     /* ── Flower — 12 pre-baked offsets (2 per petal + 2 for center) ── */
+     function drawFlower(ctx, s, o) {
+          for (var i = 0; i < 5; i++) {
+               var a = (i / 5) * Math.PI * 2;
+               ctx.beginPath();
+               ctx.ellipse(Math.cos(a) * s * 0.55 + o[i * 2], Math.sin(a) * s * 0.55 + o[i * 2 + 1], s * 0.35, s * 0.22, a, 0, Math.PI * 2);
+               ctx.stroke();
+          }
+          ctx.beginPath();
+          ctx.arc(o[10], o[11], s * 0.22, 0, Math.PI * 2);
+          ctx.stroke();
+     }
+
+     /* ── Squiggle — 14 pre-baked offsets (7 points × 2) ── */
+     function drawSquiggle(ctx, s, o) {
+          ctx.beginPath();
+          ctx.moveTo(-s * 1.2, o[0]);
+          for (var i = 0; i <= 6; i++) {
+               var x = -s * 1.2 + (i / 6) * s * 2.4 + o[i * 2];
+               var y = (i % 2 === 0 ? -1 : 1) * s * 0.5 + o[i * 2 + 1];
+               ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+     }
+
+     /* ── Square — no offsets, clean rotated square ── */
+     function drawSquare(ctx, s) {
+          ctx.beginPath();
+          ctx.rect(-s * 0.6, -s * 0.6, s * 1.2, s * 1.2);
+          ctx.stroke();
+     }
+
+     var TEXTS = ["sherwin's the best", "sherwin's the best", "cutie", "baddie", "kiss", "hug", "love", "date", "loki", "slay", "skrrt"];
+     var TYPES = ["heart", "heart", "star", "star", "sparkle", "smiley", "smiley", "flower", "squiggle", "square", "text", "text", "text"];
+
+     /* How many offsets each type needs */
+     var OFFSET_COUNTS = { heart: 5, star: 16, arrow: 8, sparkle: 0, smiley: 6, flower: 12, squiggle: 14, square: 0, text: 0 };
+
+     function makeDoodle() {
+          var type = TYPES[Math.floor(Math.random() * TYPES.length)];
+          var maxW = 1.2 + Math.random() * 1.4;
+          return {
+               x: Math.random() * W,
+               y: Math.random() * H,
+               type: type,
+               phrase: type === "text" ? TEXTS[Math.floor(Math.random() * TEXTS.length)] : null,
+               size: 10 + Math.random() * 14,
+               angle: (Math.random() - 0.5) * Math.PI * 2,
+               color: COLORS[Math.floor(Math.random() * COLORS.length)],
+               alpha: 0.28 + Math.random() * 0.24,
+               vx: (Math.random() - 0.5) * 0.12,
+               vy: (Math.random() - 0.5) * 0.1,
+               breathT: Math.random() * Math.PI * 2,
+               breathSpd: 0.004 + Math.random() * 0.004,
+               offsets: rndOffsets(OFFSET_COUNTS[type] || 0, maxW),
+          };
+     }
+
+     function drawDoodle(d) {
+          d.breathT += d.breathSpd;
+          var alpha = d.alpha * (0.65 + 0.35 * Math.sin(d.breathT));
+          // "sherwin is the best" draws on front canvas (above polaroids), everything else behind
+          var c = d.phrase === "sherwin is the best" ? ctxFront : ctx;
+
+          c.save();
+          c.translate(d.x, d.y);
+          c.rotate(d.angle);
+          c.strokeStyle = d.color;
+          c.globalAlpha = alpha;
+          c.lineWidth = 1.4;
+          c.lineCap = "round";
+          c.lineJoin = "round";
+
+          var s = d.size,
+               o = d.offsets;
+          c.fillStyle = d.color;
+          if (d.type === "heart") drawHeart(c, s, o);
+          else if (d.type === "star") drawStar(c, s, o);
+          else if (d.type === "arrow") drawArrow(c, s, o);
+          else if (d.type === "sparkle") drawSparkle(c, s * 0.55);
+          else if (d.type === "smiley") drawSmiley(c, s, o);
+          else if (d.type === "flower") drawFlower(c, s, o);
+          else if (d.type === "squiggle") drawSquiggle(c, s, o);
+          else if (d.type === "square") drawSquare(c, s);
+          else {
+               var fs = Math.round(s * 1.4);
+               c.font = "bold " + fs + "px 'Caveat', cursive";
+               c.textAlign = "left";
+               c.textBaseline = "middle";
+               c.fillText(d.phrase, 0, 0);
+          }
+
+          c.restore();
+
+          d.x += d.vx;
+          d.y += d.vy;
+          if (d.x < -30) d.x = W + 30;
+          if (d.x > W + 30) d.x = -30;
+          if (d.y < -30) d.y = H + 30;
+          if (d.y > H + 30) d.y = -30;
+     }
+
+     function loop() {
+          ctx.clearRect(0, 0, W, H);
+          ctxFront.clearRect(0, 0, W, H);
+          doodles.forEach(drawDoodle);
+          animId = requestAnimationFrame(loop);
+     }
+
+     var visObs = new IntersectionObserver(
+          function (entries) {
+               if (entries[0].isIntersecting) {
+                    if (!animId) animId = requestAnimationFrame(loop);
+               } else {
+                    if (animId) {
+                         cancelAnimationFrame(animId);
+                         animId = null;
+                    }
+               }
+          },
+          { threshold: 0.01 },
+     );
+
+     function init() {
+          resize();
+          doodles = [];
+          for (var i = 0; i < COUNT; i++) doodles.push(makeDoodle());
+          visObs.observe(section);
+     }
+
+     var rsTimer;
+     window.addEventListener("resize", function () {
+          clearTimeout(rsTimer);
+          rsTimer = setTimeout(function () {
+               resize();
+          }, 120);
+     });
+
+     // Start immediately — don't rely solely on IntersectionObserver
+     if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+     } else {
+          init();
+     }
+     // Also kick off the loop directly in case observer fires late
+     window.addEventListener("load", function () {
+          if (!animId) animId = requestAnimationFrame(loop);
+     });
 })();
