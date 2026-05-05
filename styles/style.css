@@ -47,9 +47,7 @@
     }
 
     #keep-scrolling {
-      margin-top : 0.75rem;
-      font-size  : 1rem;
-      font-weight: lighter;
+      margin-top: 0.75rem;
     }
 
     /* ═══════════════════════════════════════
@@ -190,15 +188,6 @@
     .tagline-word {
       opacity  : 0;
       animation: heroFadeUp 0.47s ease forwards;
-    }
-
-    .hero-sub {
-      font-size     : .85rem;
-      color         : var(--text-muted);
-      letter-spacing: .05em;
-      margin-top    : 1.5rem;
-      opacity       : 0;
-      animation     : heroFadeUp .54s ease forwards 1.41s;
     }
 
     @keyframes heroFadeUp {
@@ -1302,14 +1291,12 @@
       font-weight   : 500;
     }
 
+    /* ── On wider screens, single centered row ── */
     @media (min-width: 640px) {
       .cards-outro-text {
         padding-top: 7rem !important;
       }
-    }
 
-    /* ── On wider screens, single centered row ── */
-    @media (min-width: 640px) {
       #stats-bar {
         padding       : 0 1.5rem 2rem;
         display       : flex;

@@ -234,16 +234,6 @@ const revealObserver = new IntersectionObserver(
 );
 document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
 
-/* OLD SCROLL CTA */
-// document.getElementById('scroll-cta').addEventListener('click', () => {
-//   const hero = document.getElementById('hero');
-//         const heroHeight = hero.offsetHeight;
-//   window.scrollTo({
-//     top: heroHeight + 55,
-//     behavior: 'smooth'
-//   });
-// });
-
 document.getElementById("scroll-cta").addEventListener("click", () => {
      const targetSection = document.getElementById("photo-1");
 
@@ -960,22 +950,6 @@ document.querySelectorAll(".flip-card").forEach((card) => {
 })();
 
 /* ═══════════════════════════════════════════════════════
-       STATS BAR — hide swipe hint on first touch/scroll
-    ═══════════════════════════════════════════════════════ */
-// (function () {
-//   const strip = document.getElementById('stats-scroll');
-//   const hint = document.getElementById('stats-drag-hint');
-//   if (!strip || !hint) return;
-//   function hideHint() {
-//     hint.classList.add('hidden');
-//     strip.removeEventListener('scroll', hideHint);
-//     strip.removeEventListener('touchstart', hideHint);
-//   }
-//   strip.addEventListener('scroll', hideHint, { passive: true });
-//   strip.addEventListener('touchstart', hideHint, { passive: true });
-// })();
-
-/* ═══════════════════════════════════════════════════════
        DATING RESUME — SKILL LEVELS
        ── Edit the level values below (range: 1–5, increments of 0.25) ──
     ═══════════════════════════════════════════════════════ */
@@ -1197,9 +1171,6 @@ SKILLS.forEach((skill, si) => {
 })();
 
 /* ═══════════════════════════════════════════════════════
-       REPEATING CUPID PNG HEARTS
-    ═══════════════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════════════
        REPEATING CUPID HEARTS - BUG FIX VERSION
     ═══════════════════════════════════════════════════════ */
 (function () {
@@ -1312,8 +1283,6 @@ SKILLS.forEach((skill, si) => {
           );
 
           observer.observe(aboutSection);
-     } else {
-          // #about or .cupid elements not found — hearts disabled
      }
 })();
 
@@ -1522,7 +1491,6 @@ SKILLS.forEach((skill, si) => {
      var planes = [];
      var animId = null;
 
-     /* ── Preload the PNG ── */
      /* ── Preload PNG + cache its aspect ratio ── */
      var planeImg = new Image();
      var imgAspect = 0.58; // fallback until image loads (approx for this PNG)
@@ -1866,7 +1834,7 @@ SKILLS.forEach((skill, si) => {
           ctx.stroke();
      }
 
-     var TEXTS = ["sherwin's the best", "sherwin's the best", "cutie", "baddie", "kiss", "hug", "love", "date", "loki", "slay", "skrrt"];
+     var TEXTS = ["sherwin's the best", "cutie", "baddie", "kiss", "hug", "love", "date", "loki", "slay", "skrrt"];
      var TYPES = ["heart", "heart", "star", "star", "sparkle", "smiley", "smiley", "flower", "squiggle", "square", "text", "text", "text"];
 
      /* How many offsets each type needs */
