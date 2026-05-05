@@ -1502,3 +1502,232 @@ SKILLS.forEach((skill, si) => {
           init();
      }
 })();
+
+/* ═══════════════════════════════════════════════════════
+   PAPER AIRPLANES — canvas animation
+═══════════════════════════════════════════════════════ */
+(function initPlanes() {
+     var section = document.getElementById("moodboard");
+     var canvas = document.getElementById("mb-planes-canvas");
+     if (!section || !canvas) return;
+
+     var ctx = canvas.getContext("2d");
+
+     var COLORS = ["#c9a96a", "#8ab4dc", "#ede8da", "#c38a8c"];
+     var PLANE_COUNT = 5;
+     var TRAIL_MAX = 280; // cap trail length to avoid memory bloat
+
+     var canvasW = 0,
+          canvasH = 0;
+     var planes = [];
+     var animId = null;
+
+     /* ── Preload the PNG ── */
+     /* ── Preload PNG + cache its aspect ratio ── */
+     var planeImg = new Image();
+     var imgAspect = 0.58; // fallback until image loads (approx for this PNG)
+     planeImg.onload = function () {
+          imgAspect = planeImg.naturalHeight / planeImg.naturalWidth;
+     };
+     planeImg.src = "images/paper-airplane.png";
+
+     /* ── Responsive base size ──
+       Mobile  : 1.5× original (original was ~31px avg)  → range 33–60
+       Desktop : 2× mobile                               → range 66–120  */
+     function planeSize() {
+          var isDesktop = window.innerWidth >= 768;
+          if (isDesktop) return 66 + Math.random() * 54;
+          return 33 + Math.random() * 27;
+     }
+
+     function resize() {
+          canvasW = section.offsetWidth;
+          canvasH = section.offsetHeight;
+          canvas.width = canvasW;
+          canvas.height = canvasH;
+     }
+
+     function makePlane() {
+          var right = Math.random() < 0.5;
+          var baseAngle = right ? 0 : Math.PI;
+          return {
+               x: right ? -50 : canvasW + 50,
+               y: canvasH * (0.08 + Math.random() * 0.84),
+               angle: baseAngle, // current travel direction (radians)
+               baseAngle: baseAngle, // home direction for wave oscillation
+               right: right,
+               speed: 1.0 + Math.random() * 0.9,
+               color: COLORS[Math.floor(Math.random() * COLORS.length)],
+               size: planeSize(),
+               // Gentle sine-wave oscillation of heading
+               waveAmp: 0.18 + Math.random() * 0.14, // radians of heading swing
+               waveFreq: 0.007 + Math.random() * 0.007,
+               wavePhase: Math.random() * Math.PI * 2,
+               waveT: 0,
+               // Loop state
+               loopCountdown: 180 + Math.floor(Math.random() * 380),
+               looping: false,
+               loopProgress: 0,
+               loopAngularSpeed: 0.026 + Math.random() * 0.018,
+               loopDir: 1,
+               trail: [],
+          };
+     }
+
+     /* ── Step a plane's physics one tick ── */
+     function stepPlane(p) {
+          if (p.looping) {
+               p.angle += p.loopDir * p.loopAngularSpeed;
+               p.loopProgress += p.loopAngularSpeed;
+               if (p.loopProgress >= Math.PI * 2) {
+                    p.looping = false;
+                    p.loopProgress = 0;
+                    p.angle = p.baseAngle; // snap back to cruising heading
+                    p.loopCountdown = 200 + Math.floor(Math.random() * 360);
+               }
+          } else {
+               p.waveT++;
+               p.angle = p.baseAngle + Math.sin(p.waveT * p.waveFreq + p.wavePhase) * p.waveAmp;
+               if (--p.loopCountdown <= 0) {
+                    p.looping = true;
+                    p.loopProgress = 0;
+                    p.loopDir = Math.random() < 0.5 ? 1 : -1;
+               }
+          }
+          p.x += Math.cos(p.angle) * p.speed;
+          p.y += Math.sin(p.angle) * p.speed;
+
+          // ── Trail attachment: map the circled bottom-rear corner of the PNG
+          // to world space using the exact canvas transform applied in drawPlane.
+          //
+          // The corner sits at roughly (-0.27w, +0.34h) in image-local space
+          // (left of centre = behind nose, below centre = bottom of body).
+          //
+          // Right-going transform: translate → rotate(a)
+          //   wx = px + lx·cos(a) − ly·sin(a)
+          //   wy = py + lx·sin(a) + ly·cos(a)
+          //
+          // Left-going transform: translate → scale(−1,1) → rotate(π+a)
+          //   wx = px + lx·cos(a) − ly·sin(a)   (same x)
+          //   wy = py − lx·sin(a) − ly·cos(a)   (y signs flipped)
+          var lx = -0.27 * p.size;
+          var ly = 0.285 * p.size * imgAspect;
+          var ca = Math.cos(p.angle),
+               sa = Math.sin(p.angle);
+          var tailX = p.x + lx * ca - ly * sa;
+          var tailY = p.right ? p.y + lx * sa + ly * ca : p.y - lx * sa - ly * ca;
+
+          p.trail.push({ x: tailX, y: tailY });
+          if (p.trail.length > TRAIL_MAX) p.trail.shift();
+     }
+
+     /* ── Draw the dashed flight-path trail ── */
+     function drawTrail(p) {
+          var t = p.trail;
+          if (t.length < 2) return;
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(t[0].x, t[0].y);
+          for (var i = 1; i < t.length; i++) ctx.lineTo(t[i].x, t[i].y);
+          ctx.setLineDash([5, 8]);
+          ctx.strokeStyle = p.color;
+          ctx.globalAlpha = 0.36;
+          ctx.lineWidth = 1.3;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.restore();
+     }
+
+     /* ── Draw the PNG airplane rotated to face its travel direction ── */
+     function drawPlane(p) {
+          if (!planeImg.complete || !planeImg.naturalWidth) return;
+
+          var s = p.size;
+          var aspect = planeImg.naturalHeight / planeImg.naturalWidth;
+          var w = s,
+               h = s * aspect;
+
+          ctx.save();
+          ctx.globalAlpha = 0.88;
+          ctx.translate(p.x, p.y);
+
+          // The PNG faces RIGHT.
+          // For right-going planes: rotate by current angle (≈0 at cruise).
+          // For left-going planes:  mirror with scale(-1,1) then rotate(π + angle)
+          //   — this maps the nose correctly regardless of loop phase.
+          if (p.right) {
+               ctx.rotate(p.angle);
+          } else {
+               ctx.scale(-1, 1);
+               ctx.rotate(Math.PI + p.angle);
+          }
+
+          ctx.drawImage(planeImg, -w * 0.5, -h * 0.5, w, h);
+          ctx.restore();
+     }
+
+     function loop() {
+          ctx.clearRect(0, 0, canvasW, canvasH);
+
+          for (var i = planes.length - 1; i >= 0; i--) {
+               var p = planes[i];
+               stepPlane(p);
+
+               // Remove if well off-canvas in any direction
+               if (p.x < -220 || p.x > canvasW + 220 || p.y < -220 || p.y > canvasH + 220) {
+                    planes.splice(i, 1);
+                    planes.push(makePlane());
+                    continue;
+               }
+
+               drawTrail(p);
+               drawPlane(p);
+          }
+
+          animId = requestAnimationFrame(loop);
+     }
+
+     var visObs = new IntersectionObserver(
+          function (entries) {
+               if (entries[0].isIntersecting) {
+                    if (!animId) animId = requestAnimationFrame(loop);
+               } else {
+                    if (animId) {
+                         cancelAnimationFrame(animId);
+                         animId = null;
+                    }
+               }
+          },
+          { threshold: 0.01 },
+     );
+
+     function init() {
+          resize();
+          // Stagger planes across the canvas so they don't all enter at once
+          for (var i = 0; i < PLANE_COUNT; i++) {
+               var p = makePlane();
+               var steps = Math.floor((i / PLANE_COUNT) * (canvasW / p.speed));
+               for (var s = 0; s < steps; s++) stepPlane(p);
+               planes.push(p);
+          }
+          visObs.observe(section);
+     }
+
+     var rsTimer;
+     window.addEventListener("resize", function () {
+          clearTimeout(rsTimer);
+          rsTimer = setTimeout(function () {
+               resize();
+               planes = [];
+               init();
+          }, 120);
+     });
+
+     if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+     } else {
+          init();
+     }
+})();
