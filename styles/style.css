@@ -463,6 +463,15 @@
       display   : block;
     }
 
+    .attention-spam-img {
+      text-align: center;
+      margin    : 1rem 0;
+    }
+
+    .attention-spam-img figcaption {
+      font-size: 0.75rem;
+    }
+
     /* ═══════════════════════════════════════
        WHY HEADING
     ═══════════════════════════════════════ */

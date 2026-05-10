@@ -5,17 +5,17 @@
 const CARDS = [
      {
           quote: "i like him enough to spend literally hours making ts for him. 🙄<br><br>this guy is one of my best friends and i would trust him with <em>almost</em> anything. he's the type to leave me on delivered, force me to double text him, only for him to then leave me on read. but he's also the guy who'd drop everything to come to us during a time of need. he's the guy who makes sure we're safe, taken care of, and comfortable. he's a teddy bear tryna be nonchalant but his heart is too big to let him be. he <strong>will</strong> take care of you; just as he has done for us. he loves - sometimes silently, but always hard. 😉",
-          attr: "— Sherwin (friend of 20 years)",
+          attr: "— Sherwin",
           rotation: 0.9,
      },
      {
-          quote: "",
-          attr: "— Brandon",
+          quote: "Benny has always been the best brother from another mother to me. He’ll always be there for you and he works way too hard for someone who doesn’t need to. He has a lot of love to give - he’s just waiting for the right woman to give it to!<br><br>P.S. Thanks for sponsoring my husband and I’s China trip.",
+          attr: "— Cassy",
           rotation: -1.5,
      },
      {
-          quote: "",
-          attr: "— Lynn",
+          quote: "I’ve known this guy for 20 years, so I can confidently say he’s one of the most thoughtful and considerate people out there. He always goes above and beyond for his friends, always shows up when it matters, and somehow still has time to be ridiculously talented too. This man can sing, cook, AND hold a 3-hour yap session about literally any topic you’re interested in like he’s hosting a podcast nobody asked for. Honestly feels unfair that one person got allocated this many stats. If he’s serenading you while making dinner and passionately explaining random facts at 1am, it’s probably already over for you.",
+          attr: "— Bryan",
           rotation: 2.5,
      },
      {
