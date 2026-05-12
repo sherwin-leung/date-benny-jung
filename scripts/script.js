@@ -4,7 +4,7 @@
     ═══════════════════════════════════════════════════════ */
 const CARDS = [
      {
-          quote: "i like him enough to spend literally hours making ts for him. 🙄<br><br>this guy is one of my best friends and i would trust him with <em>almost</em> anything. he's the type to leave me on delivered, force me to double text him, only for him to then leave me on read. but he's also the guy who'd drop everything to come to us during a time of need. he's the guy who makes sure we're safe, taken care of, and comfortable. he's a teddy bear tryna be nonchalant but his heart is too big to let him be. he <strong>will</strong> take care of you; just as he has done for us. he loves - sometimes silently, but always hard. 😉",
+          quote: "I like him enough to spend literally hours making this for him. 🙄<br><br>This guy is one of my best friends and I would trust him with <em>almost</em> anything. He's the type to leave me on delivered, force me to double text him, only for him to then leave me on read. But he's also the guy who'd drop everything to come to us during a time of need. He's the guy who makes sure we're safe, taken care of, and comfortable. He's a teddy bear tryna be nonchalant, but his heart is too big to let him be. He <strong>will</strong> take care of you; just as he has done for us. He loves - sometimes silently, but always hard. 😉",
           attr: "— Sherwin",
           rotation: 0.9,
      },
@@ -14,18 +14,18 @@ const CARDS = [
           rotation: -1.5,
      },
      {
+          quote: "Dependable, financially (and mentally) stable and ready to break off his long term relationship with his gaming chair. He can help you sleep with a nice new mattress or keep you up with the same type of energy 😉 trust me, he can tank a few hits if you’re ever in a bad mood. Or buy you flowers. 💯🔥",
+          attr: "— Tobby",
+          rotation: -3.5,
+     },
+     {
           quote: "I’ve known this guy for 20 years, so I can confidently say he’s one of the most thoughtful and considerate people out there. He always goes above and beyond for his friends, always shows up when it matters, and somehow still has time to be ridiculously talented too. This man can sing, cook, AND hold a 3-hour yap session about literally any topic you’re interested in like he’s hosting a podcast nobody asked for. Honestly feels unfair that one person got allocated this many stats. If he’s serenading you while making dinner and passionately explaining random facts at 1am, it’s probably already over for you.",
           attr: "— Bryan",
           rotation: 2.5,
      },
      {
-          quote: "",
+          quote: "Benny is incredibly sweet once you get to know him. He’s generous, gentle, and very family-oriented. If you date him, he’ll take care of everything！you’ll have your own personal caretaker, provider, chef, and devoted partner all in one",
           attr: "— Caylia",
-          rotation: -3.5,
-     },
-     {
-          quote: "",
-          attr: "— Bryan",
           rotation: 1.5,
      },
      {

@@ -472,6 +472,11 @@
       font-size: 0.75rem;
     }
 
+    #light-blue-hearts {
+      text-align: center;
+      margin    : 1rem 0;
+    }
+
     /* ═══════════════════════════════════════
        WHY HEADING
     ═══════════════════════════════════════ */
