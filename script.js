@@ -4,7 +4,7 @@
     ═══════════════════════════════════════════════════════ */
 const CARDS = [
      {
-          quote: "i like him enough to spend literally hours making ts for him. 🙄<br><br>this guy is one of my best friends and i would trust him with <em>almost</em> anything. he's the type to leave me on delivered, force me to double text him, only for him to then leave me on read. but he's also the guy who'd drop everything to come to us during a time of need. he's the guy who makes sure we're safe, taken care of, and comfortable. he's a teddy bear tryna be nonchalant but his heart is too big to let him be. he <strong>will</strong> take care of you; just as he has done for us. he loves - sometimes silently, but always hard. 😉",
+          quote: "I like him enough to spend literally hours making this for him. 🙄<br><br>This guy is one of my best friends and I would trust him with <em>almost</em> anything. He's the type to leave me on delivered, force me to double text him, only for him to then leave me on read. But he's also the guy who'd drop everything to come to us during a time of need. He's the guy who makes sure we're safe, taken care of, and comfortable. He's a teddy bear tryna be nonchalant, but his heart is too big to let him be. He <strong>will</strong> take care of you; just as he has done for us. He loves - sometimes silently, but always hard. 😉",
           attr: "— Sherwin",
           rotation: 0.9,
      },
@@ -24,8 +24,8 @@ const CARDS = [
           rotation: 2.5,
      },
      {
-          quote: "",
-          attr: "— Bryan",
+          quote: "Benny is incredibly sweet once you get to know him. He’s generous, gentle, and very family-oriented. If you date him, he’ll take care of everything！you’ll have your own personal caretaker, provider, chef, and devoted partner all in one",
+          attr: "— Caylia",
           rotation: 1.5,
      },
      {
@@ -958,7 +958,7 @@ const SKILLS = [
      { name: "Reliability", level: 5 },
      { name: "Listening", level: 3.5 },
      { name: "Affection", level: 4.5 },
-     { name: "Humor", level: 2 },
+     { name: "Humor", level: 3 },
      { name: "Energy", level: 3.5 },
      { name: "Spontaneity", level: 3.5 },
      { name: "Financial Stability", level: 5 },
