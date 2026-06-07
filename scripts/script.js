@@ -958,7 +958,7 @@ const SKILLS = [
      { name: "Reliability", level: 5 },
      { name: "Listening", level: 3.5 },
      { name: "Affection", level: 4.5 },
-     { name: "Humor", level: 2 },
+     { name: "Humor", level: 3 },
      { name: "Energy", level: 3.5 },
      { name: "Spontaneity", level: 3.5 },
      { name: "Financial Stability", level: 5 },
