@@ -28,11 +28,6 @@ const CARDS = [
           attr: "— Caylia",
           rotation: 1.5,
      },
-     {
-          quote: "",
-          attr: "— Anyone else who wants to join!",
-          rotation: 1.5,
-     },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -957,9 +952,9 @@ const SKILLS = [
      { name: "Communication", level: 4 },
      { name: "Reliability", level: 5 },
      { name: "Listening", level: 3.5 },
-     { name: "Affection", level: 4.5 },
-     { name: "Humor", level: 3 },
-     { name: "Energy", level: 3.5 },
+     { name: "Affection", level: 5 },
+     { name: "Humor", level: 3.25 },
+     { name: "Energy", level: 3.75 },
      { name: "Spontaneity", level: 3.5 },
      { name: "Financial Stability", level: 5 },
 ];
@@ -990,10 +985,10 @@ function buildDot(skillIdx, dotIdx, level) {
                // Left half
                clip = `<rect x="${cx - r}" y="${cy - r}" width="${r}" height="${2 * r}"/>`;
           } else if (frac === 0.75) {
-               // Three quarters — missing bottom-right (left half + top-right)
+               // Three quarters — missing top-right (bottom half + top-left)
                clip =
-                    `<rect x="${cx - r}" y="${cy - r}" width="${r}" height="${2 * r}"/>` +
-                    `<rect x="${cx}" y="${cy - r}" width="${r}" height="${r}"/>`;
+                    `<rect x="${cx - r}" y="${cy}" width="${2 * r}" height="${r}"/>` +
+                    `<rect x="${cx - r}" y="${cy - r}" width="${r}" height="${r}"/>`;
           }
           return `<svg width="22" height="22" viewBox="0 0 20 20"><defs><clipPath id="${id}">${clip}</clipPath></defs>${outline}<circle class="dot-fill-el" style="transition-delay:${650 + dotIdx * 80}ms" cx="${cx}" cy="${cy}" r="${r}" fill="var(--gold)" clip-path="url(#${id})"/></svg>`;
      }
